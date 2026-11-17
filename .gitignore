@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.zip
+# modelli e verifiche reali restano sul computer del docente
+verifica-dal-modello/modelli/*.docx
+*.docx

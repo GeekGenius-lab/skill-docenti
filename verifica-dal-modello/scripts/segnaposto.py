@@ -1,53 +1,78 @@
-"""Mostra la struttura di un modello di verifica .docx: paragrafi, tabelle, spazi da compilare e trattini da sostituire.
+"""Mostra la struttura di un modello di verifica .docx, nell'ordine del documento:
+paragrafi, tabelle, istruzioni da sostituire, righe ____ e trattini lunghi.
 
 Uso:  python segnaposto.py MODELLO.docx
 Serve: pip install python-docx
+
+Etichette:
+  <ISTRUZIONE>  testo tra quadre o tra < > che spiega cosa scrivere ("[Inserire qui ...]"): va sostituito
+  <RIGHE ____>  spazi vuoti: spesso li compila lo studente o il docente dopo la prova (nome, data, punteggio).
+                Decidi caso per caso: si riempiono solo quelli che riguardano la preparazione della prova.
+  <TRATTINO>    trattino lungo o medio da sostituire con altra punteggiatura
 """
 import re
 import sys
 
 import docx
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 
-# testo tra quadre con un'istruzione per chi compila ("[Inserire qui ...]"), righe ____ e puntini
-ISTRUZIONE = r"\[[^\]]*\b(?:[Ii]nserire|[Ii]nserisci|[Ss]crivere|[Ss]crivi|[Ii]ndicare|[Dd]escrivere|qui)\b[^\]]*\]"
-SEGNAPOSTO = re.compile(ISTRUZIONE + r"|_{4,}|\.{6,}")
+W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+PAROLE = r"inserire|inserisci|scrivere|scrivi|indicare|indica|descrivere|completare|completa|aggiungere|aggiungi|riportare|qui"
+ISTRUZIONE = re.compile(r"\[[^\]]*\b(?:%s)\b[^\]]*\]|<[^<>]*\b(?:%s)\b[^<>]*>|\bX{3,}\b" % (PAROLE, PAROLE), re.I)
+RIGHE = re.compile(r"_{4,}|\.{6,}")
 TRATTINI = re.compile("[–—]")
 
 
 def segna(testo):
-    note = []
-    if SEGNAPOSTO.search(testo):
-        note.append("DA COMPILARE")
-    if TRATTINI.search(testo):
-        note.append("TRATTINO")
+    note = [n for n, rx in (("ISTRUZIONE", ISTRUZIONE), ("RIGHE ____", RIGHE), ("TRATTINO", TRATTINI)) if rx.search(testo)]
     return ("  <" + ", ".join(note) + ">") if note else ""
 
 
-def mostra(percorso):
+def blocchi(contenitore, elemento):
+    """Paragrafi e tabelle nell'ordine in cui compaiono."""
+    for figlio in elemento.iterchildren():
+        if figlio.tag == W + "p":
+            yield Paragraph(figlio, contenitore)
+        elif figlio.tag == W + "tbl":
+            yield Table(figlio, contenitore)
+
+
+def mostra(contenitore, elemento, rientro=""):
+    t_n = 0
+    for b in blocchi(contenitore, elemento):
+        if isinstance(b, Paragraph):
+            testo = b.text.strip()
+            if testo:
+                stile = b.style.name if b.style is not None else ""
+                print("%s[%s] %s%s" % (rientro, stile, testo.replace("\n", "\n" + rientro + "   "), segna(testo)))
+        else:
+            t_n += 1
+            print("%s== Tabella %d (%d righe x %d colonne)" % (rientro, t_n, len(b.rows), len(b.columns)))
+            for r_i, r in enumerate(b.rows, 1):
+                for c_i, tc in enumerate(r._tr.tc_lst, 1):        # celle reali, una volta sola anche se unite
+                    print("%s  R%d C%d:" % (rientro, r_i, c_i))
+                    mostra(b, tc, rientro + "      ")
+
+
+def principale(percorso):
     d = docx.Document(percorso)
     print("== Corpo")
-    for i, p in enumerate(d.paragraphs):
-        if p.text.strip():
-            print("P%-4d [%s] %s%s" % (i, p.style.name, p.text.strip()[:160], segna(p.text)))
-    for t_i, t in enumerate(d.tables):
-        print("== Tabella %d (%d righe x %d colonne)" % (t_i, len(t.rows), len(t.columns)))
-        for r_i, r in enumerate(t.rows):
-            visti = set()
-            for c_i, c in enumerate(r.cells):
-                if id(c._tc) in visti:          # celle unite: python-docx le ripete
-                    continue
-                visti.add(id(c._tc))
-                testo = c.text.strip().replace("\n", " | ")
-                print("  T%d R%d C%d: %s%s" % (t_i, r_i, c_i, testo[:160] or "(vuota)", segna(c.text)))
-    for s_i, s in enumerate(d.sections):
-        for nome, parte in (("intestazione", s.header), ("piè di pagina", s.footer)):
-            testo = " | ".join(p.text.strip() for p in parte.paragraphs if p.text.strip())
-            if testo:
-                print("== Sezione %d, %s: %s%s" % (s_i, nome, testo[:160], segna(testo)))
+    mostra(d, d.element.body)
+    for s_i, s in enumerate(d.sections, 1):
+        for nome, parte in (("intestazione", s.header), ("piè di pagina", s.footer),
+                            ("intestazione prima pagina", s.first_page_header), ("piè di pagina prima pagina", s.first_page_footer),
+                            ("intestazione pagine pari", s.even_page_header), ("piè di pagina pagine pari", s.even_page_footer)):
+            if not parte.is_linked_to_previous and (any(p.text.strip() for p in parte.paragraphs) or parte.tables):
+                print("== Sezione %d, %s" % (s_i, nome))
+                mostra(parte, parte._element, "  ")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit(__doc__)
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    mostra(sys.argv[1])
+    try:
+        principale(sys.argv[1])
+    except Exception as e:
+        sys.exit("Non riesco a leggere %s: %s" % (sys.argv[1], e))

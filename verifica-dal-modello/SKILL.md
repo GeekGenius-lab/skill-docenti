@@ -9,7 +9,7 @@ Prepari una verifica scritta per un insegnante. Il risultato è un file Word cos
 
 ## Regole che non si cambiano
 
-1. **Il modello resta intatto.** Intestazione, loghi, tabelle, griglie di valutazione, rubriche e testi fissi non si toccano. Riempi solo gli spazi da compilare: segnaposto tra parentesi quadre, righe `____`, celle vuote da completare. L'unica eccezione sono i trattini lunghi e medi (— e –): li sostituisci in tutto il documento, modello compreso (vedi `riferimenti/stile.md`).
+1. **Il modello resta intatto.** Intestazione, loghi, tabelle, griglie di valutazione, rubriche e testi fissi non si toccano. Riempi solo gli spazi che riguardano la preparazione della prova: le istruzioni tra parentesi quadre ("[Inserire qui ...]"), materia, titolo, durata, materiali, competenze. Gli spazi che servono allo studente o alla correzione restano vuoti: nome, classe se la scrive lo studente, data, punteggi ottenuti, voto, autovalutazione, feedback. Se non è chiaro, chiedi al docente. L'unica modifica ammessa al testo del modello riguarda i trattini lunghi e medi (— e –): li sostituisci in tutto il documento (vedi `riferimenti/stile.md`). Se il modello contiene frasi che contrastano con queste regole (per esempio una riga sulle misure per PDP o PEI stampata sul foglio dello studente), non cambiarle: segnalale al docente nel riepilogo.
 2. **Solo argomenti svolti in classe.** Scrivi esercizi solo sugli argomenti che il docente dichiara di aver fatto. Se non li ha detti, chiediglieli prima di scrivere qualsiasi cosa. Non aggiungere argomenti "vicini" o "di ripasso" che lui non ha nominato.
 3. **Niente dati degli alunni.** Non chiedere nomi, diagnosi, certificazioni (BES, DSA, PEI, PDP), indirizzi o mail. Se il docente li scrive lo stesso, non riportarli nel file e non ripeterli nella risposta. Per le versioni adattate bastano misure anonime, per esempio "versione con meno esercizi" o "tempo più lungo del 30%". Il resto lo gestisce il docente sul suo computer.
 4. **Nessun riferimento personale nel file**, se non quelli che il modello già contiene o che il docente chiede (nome dell'istituto, materia, classe).
@@ -32,7 +32,7 @@ Se il docente dice "fai tu" su qualcosa che non sono gli argomenti, scegli tu in
 
 ### 2. Leggi il modello
 
-Esegui `scripts/segnaposto.py MODELLO.docx` (se puoi eseguire Python) per vedere la struttura: paragrafi, tabelle, celle, segnaposto da compilare e trattini da sostituire. Se non puoi eseguire script, apri il documento e fai lo stesso elenco a mano.
+Esegui `scripts/segnaposto.py MODELLO.docx` (se puoi eseguire Python) per vedere la struttura nell'ordine del documento: paragrafi, tabelle, celle, istruzioni da sostituire (`<ISTRUZIONE>`), spazi vuoti (`<RIGHE ____>`) e trattini (`<TRATTINO>`). Per ogni spazio vuoto decidi se va riempito ora o se è per lo studente o la correzione (regola 1). Se non puoi eseguire script, apri il documento e fai lo stesso elenco a mano.
 
 Capisci cosa chiede ogni sezione del modello: punteggi, tipi di domanda, livelli di competenza, rubriche. La verifica deve rispettare quella struttura e quei punteggi. Se una sezione non si adatta agli argomenti svolti (per esempio un "compito di realtà" su argomenti solo teorici), proponi al docente come riempirla. Non toglierla.
 
@@ -50,30 +50,37 @@ Segui `riferimenti/stile.md`. In breve:
 
 ### 4. Compila il file
 
-Lavora su una copia del modello, mai sull'originale. Se puoi eseguire Python, usa `python-docx`: sostituisci il testo dei segnaposto dentro i run esistenti, così il formato resta quello del modello. Per i nuovi paragrafi copia lo stile di un paragrafo vicino. Non ricreare il documento da zero e non cambiare margini, caratteri o tabelle.
+Lavora su una copia del modello, mai sull'originale. Se puoi eseguire Python, usa `python-docx`. Non ricreare il documento da zero e non cambiare margini, caratteri o tabelle.
 
-Prepara due file:
+- **Testo breve al posto di un'istruzione** (titolo, materia, competenza): sostituisci il testo dentro i run esistenti, così il formato resta quello del modello.
+- **Esercizi al posto di un'istruzione** ("[Inserire quesiti ...]"): copia il paragrafo dell'istruzione (`copy.deepcopy` dell'elemento `w:p`) per ogni nuovo paragrafo che ti serve, inserisci le copie subito dopo con `addnext` e cambia solo il testo. Così ogni esercizio ha lo stile del modello.
+- **Dentro una cella** fai lo stesso con i paragrafi della cella. Se la cella usa un solo paragrafo con gli a capo, aggiungi gli a capo con `run.add_break()`.
+- **Spazio per le risposte:** se il modello ha poche righe per rispondere e ne servono di più, aggiungi righe `____` solo dentro lo spazio della risposta (nella stessa cella o subito sotto l'esercizio). Se non basta, scrivi nelle istruzioni "rispondi sul foglio protocollo".
+- **Proprietà del file:** svuota autore e "ultima modifica di" (`core_properties.author` e `last_modified_by`). Spesso il modello contiene il nome di chi l'ha scritto.
 
-- `Verifica_<materia>_<classe>_<argomento>.docx`, il file da stampare;
-- `Verifica_<materia>_<classe>_<argomento>_SOLUZIONI.docx`, per il docente: soluzioni svolte, punteggio per ogni passaggio, errori tipici da guardare.
+Prepara questi file. Nei nomi usa parole brevi, senza spazi né accenti.
 
-Per ogni versione adattata fai un file a parte, con lo stesso nome più `_versione_ridotta` (o il nome che dà il docente). La versione adattata deve sembrare una verifica normale: niente scritte come "per alunni DSA" sul foglio dello studente.
+- `Verifica_<materia>_<classe>_<argomento>.docx`, il file da stampare, sul modello. Se la classe è "seconda" senza sezione scrivi `2`; se gli argomenti sono più di uno usa il primo o un titolo breve.
+- `Verifica_<materia>_<classe>_<argomento>_SOLUZIONI.docx`, per il docente: un documento semplice (non serve il modello) con soluzioni svolte, punteggio per ogni passaggio ed errori tipici da guardare.
+
+Per ogni versione adattata fai un file a parte, sul modello, con lo stesso nome più `_versione_ridotta` (o il nome che dà il docente). La versione adattata deve sembrare una verifica normale: niente scritte come "per alunni DSA" sul foglio dello studente.
 
 Se non puoi eseguire codice (per esempio su claude.ai senza strumenti di analisi), scrivi il testo completo, sezione per sezione, indicando in quale punto del modello va ogni parte, e spiega al docente che deve incollarlo nel modello.
 
 ### 5. Primo controllo: automatico
 
-Esegui `scripts/controlla_docx.py --modello MODELLO.docx VERIFICA.docx [altri file]`. Lo script controlla che:
+Esegui `scripts/controlla_docx.py --modello MODELLO.docx VERIFICA.docx [versioni adattate]` sui file costruiti sul modello, e `scripts/controlla_docx.py SOLUZIONI.docx` sulle soluzioni (senza `--modello`, perché non sono sul modello). Lo script controlla che:
 
 - il file si apra;
 - non ci siano testi in caratteri simbolo (Wingdings, Symbol), caratteri rotti o invisibili;
 - non ci siano trattini lunghi o medi;
 - non siano rimasti segnaposto da compilare ("[Inserire ...]");
 - le tabelle non abbiano celle spostate;
-- non ci siano paragrafi ripetuti per errore;
-- i testi fissi del modello siano ancora tutti presenti.
+- non ci siano testi ripetuti per errore, anche dentro le tabelle;
+- i testi fissi del modello siano ancora presenti (i trattini sostituiti non contano);
+- autore e "ultima modifica di" siano vuoti.
 
-Correggi ogni problema e riesegui finché esce `OK`. Le caselle da spuntare del modello (☐, spesso in Wingdings) vanno bene: se lo script le segnala, controlla che il carattere simbolo sia solo sulle caselle e non sul testo.
+Correggi ogni problema e riesegui finché esce `OK`. Se lo script segnala un testo del modello cambiato perché il docente ti ha chiesto di cambiarlo, lascialo e scrivilo nel riepilogo. Lo script non vede tutto (per esempio figure e formule): il secondo controllo serve anche a questo. Le caselle da spuntare del modello (☐, spesso in Wingdings) vanno bene: se lo script le segnala, controlla che il carattere simbolo sia solo sulle caselle e non sul testo.
 
 Poi somma i punteggi a mano, sezione per sezione, e controlla che tornino con i totali del modello.
 
@@ -82,7 +89,7 @@ Poi somma i punteggi a mano, sezione per sezione, e controlla che tornino con i 
 Rileggi la verifica **come se non l'avessi scritta tu**, con la lista di `riferimenti/controllo.md`.
 
 - In Claude Code, o dove puoi avviare un sotto-agente, affida la ricontrollata a un agente separato. Dagli solo i file (modello, verifica, soluzioni) e l'elenco degli argomenti svolti, non le tue intenzioni. Chiedigli di risolvere la verifica da studente e di segnalare errori, ambiguità e domande fuori programma.
-- Altrimenti fallo tu, in un passaggio a parte: risolvi ogni esercizio da zero senza guardare le soluzioni, poi confronta.
+- Altrimenti fallo tu, in un passaggio a parte. Rileggi il file finito dal documento, non dai tuoi appunti. Risolvi di nuovo ogni esercizio con i dati scritti sul foglio, poi confronta con le soluzioni. Cerca soprattutto quello che sfugge a chi ha scritto: dati mancanti, domande che si suggeriscono a vicenda, argomenti non in elenco.
 
 Correggi quello che trovi. Se hai corretto qualcosa, rifai il primo controllo.
 

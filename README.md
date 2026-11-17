@@ -26,9 +26,11 @@ Skill per Claude che aiutano gli insegnanti nel lavoro di tutti i giorni. Per or
 
 ### Su claude.ai (sito o app)
 
+Serve un account con le skill attive: oggi richiedono un piano a pagamento. Nei piani Team ed Enterprise potrebbe doverle attivare l'amministratore: da verificare con chi gestisce l'account della scuola.
+
 1. Scarica questo repository: pulsante verde **Code**, poi **Download ZIP**. Estrai la cartella sul tuo computer.
 2. Facoltativo: metti il modello di verifica della tua scuola (.docx) nella cartella `verifica-dal-modello/modelli/`. Così non devi allegarlo ogni volta.
-3. Crea lo zip della skill. Se hai Python: `python strumenti/crea_zip.py`. Senza Python: clic destro sulla cartella `verifica-dal-modello` e poi "Comprimi" (Windows: "Invia a > Cartella compressa"). Lo zip deve contenere la cartella `verifica-dal-modello` con dentro `SKILL.md`.
+3. Crea lo zip della skill. Se hai Python: `python strumenti/crea_zip.py` (su Mac `python3`, su Windows `py`). Senza Python: clic destro sulla cartella `verifica-dal-modello` e poi "Comprimi" (Windows: "Invia a > Cartella compressa"). Lo zip deve contenere la cartella `verifica-dal-modello` con dentro `SKILL.md`.
 4. Su claude.ai apri **Impostazioni > Funzionalità** e attiva **Esecuzione del codice e creazione di file**. Serve per creare il file Word e per i controlli automatici.
 5. Nella stessa pagina, alla voce **Skill**, scegli **Carica skill** e seleziona lo zip.
 6. In una nuova chat scrivi per esempio: "Prepara una verifica di matematica per la 2B sul modello della scuola" e allega il modello. Claude userà la skill da solo.
@@ -37,7 +39,11 @@ I nomi delle voci di menu possono cambiare con gli aggiornamenti di claude.ai.
 
 ### Su Claude Code
 
-Copia la cartella `verifica-dal-modello` in `~/.claude/skills/` (per tutti i tuoi progetti) oppure in `.claude/skills/` dentro la cartella in cui lavori. Gli script richiedono Python con `python-docx`: `pip install python-docx`.
+1. Copia la cartella `verifica-dal-modello` nella cartella delle skill:
+   - per tutti i tuoi progetti: `C:\Users\<tuo nome>\.claude\skills\` su Windows, `~/.claude/skills/` su Mac e Linux (è una cartella nascosta: nel Finder premi Cmd+Maiusc+punto per vederla);
+   - solo per un progetto: `.claude/skills/` dentro la cartella del progetto.
+2. Installa la libreria per i file Word: `python3 -m pip install python-docx` (su Windows `py -m pip install python-docx`). Se compare l'errore "externally-managed-environment", chiedi a Claude Code di creare un ambiente virtuale.
+3. Chiudi e riapri Claude Code.
 
 ## Dove aggiornare
 
@@ -61,8 +67,8 @@ python verifica-dal-modello/scripts/controlla_docx.py --modello modello.docx ver
 ```
 
 - `segnaposto.py` mostra la struttura del modello: paragrafi, tabelle, spazi da compilare, trattini da sostituire.
-- `controlla_docx.py` controlla la verifica finita: caratteri rotti o in font simbolo, trattini lunghi, segnaposto non compilati, tabelle spostate, paragrafi ripetuti, testi del modello mancanti. Esce con `OK` o con l'elenco dei problemi.
+- `controlla_docx.py` controlla la verifica finita: caratteri rotti o in font simbolo, trattini lunghi, segnaposto non compilati, tabelle spostate, testi ripetuti, testi del modello mancanti, nome dell'autore rimasto nelle proprietà del file. Esce con `OK` o con l'elenco dei problemi. Non controlla figure, formule e somma dei punteggi: quelli si guardano a occhio.
 
 ## Privacy
 
-La skill lavora solo sul modello e sugli argomenti che le dai. Non mettere nei modelli, negli esempi o nelle richieste nomi di studenti o informazioni sulla loro salute. Se ti serve una versione adattata, descrivi la misura ("meno esercizi", "tempo più lungo"), non lo studente.
+La skill lavora solo sul modello e sugli argomenti che le dai. Prima di mettere il modello in `modelli/` o di condividerlo, guarda le proprietà del file (in Word: File > Informazioni): autore e "ultima modifica di" possono contenere nomi di colleghi. La skill li svuota nelle verifiche che prepara. Non mettere nei modelli, negli esempi o nelle richieste nomi di studenti o informazioni sulla loro salute. Se ti serve una versione adattata, descrivi la misura ("meno esercizi", "tempo più lungo"), non lo studente.

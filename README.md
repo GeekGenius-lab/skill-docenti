@@ -74,3 +74,7 @@ python verifica-dal-modello/scripts/controlla_docx.py --modello modello.docx ver
 ## Privacy
 
 La skill lavora solo sul modello e sugli argomenti che le dai. Prima di mettere il modello in `modelli/` o di condividerlo, guarda le proprietà del file (in Word: File > Informazioni): autore e "ultima modifica di" possono contenere nomi di colleghi. La skill li svuota nelle verifiche che prepara. Non mettere nei modelli, negli esempi o nelle richieste nomi di studenti o informazioni sulla loro salute. Se ti serve una versione adattata, descrivi la misura ("meno esercizi", "tempo più lungo"), non lo studente.
+
+## Licenza
+
+Queste skill sono distribuite con licenza [Creative Commons Attribuzione 4.0 Internazionale (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/deed.it). Puoi usarle, copiarle e modificarle, anche per altre scuole, citando la fonte: "progetto skill-docenti", e dicendo se hai fatto modifiche. Il testo completo è nel file `LICENSE`, che trovi anche dentro la cartella `verifica-dal-modello` e quindi nello zip.

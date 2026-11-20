@@ -1,3 +1,6 @@
+# /// script
+# dependencies = ["python-docx"]  # python-docx installa anche lxml
+# ///
 """Mostra la struttura di un modello di verifica .docx, nell'ordine del documento:
 paragrafi, tabelle, istruzioni da sostituire, righe ____ e trattini lunghi.
 

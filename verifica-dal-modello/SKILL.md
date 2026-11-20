@@ -1,6 +1,10 @@
 ---
 name: verifica-dal-modello
 description: Prepara una verifica scritta in Word partendo dal modello di verifica della scuola (file .docx fornito dal docente), solo sugli argomenti che il docente dichiara svolti in classe, con uno stile semplice e umano, poi la controlla due volte prima di consegnarla. Usala quando un insegnante chiede di preparare, scrivere o impaginare una verifica, un compito in classe o una prova scritta "sul modello della scuola", "sul format d'istituto" o allegando il modello.
+compatibility: Richiede l'esecuzione del codice (su claude.ai "Esecuzione del codice e creazione di file") e Python con python-docx per gli script. Senza, la skill lavora a mano.
+metadata:
+  version: "1.0"
+  aggiornata: "2026-11-20"
 ---
 
 # Verifica dal modello della scuola

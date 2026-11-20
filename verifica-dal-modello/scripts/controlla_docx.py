@@ -1,3 +1,6 @@
+# /// script
+# dependencies = ["python-docx"]  # python-docx installa anche lxml
+# ///
 """Primo controllo automatico delle verifiche .docx, prima di consegnarle.
 
 Uso:  python controlla_docx.py [--modello MODELLO.docx] FILE.docx [altri file]

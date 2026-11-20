@@ -57,6 +57,8 @@ I nomi delle voci di menu possono cambiare con gli aggiornamenti di claude.ai.
 
 Su claude.ai, dopo ogni modifica ricrea lo zip e caricalo di nuovo. Prima togli la versione vecchia della skill.
 
+Per sapere quale versione hai: apri `verifica-dal-modello/SKILL.md` e guarda in alto le righe `version` e `aggiornata` (data dell'ultima modifica). Confrontale con quelle del file nel repository.
+
 ## Gli script
 
 Puoi usarli anche da soli, senza Claude:
